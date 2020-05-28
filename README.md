@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-# aro-send
+# aro-share
 
 ## Project setup
 ```
@@ -31,5 +30,4 @@ npm run lint
 npm run test:unit
 ```
 =======
-# aro-send
->>>>>>> 8b4ff776cd67b87f267c4371a645d87a93678cf5
+# aro-share
