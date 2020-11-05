@@ -33,8 +33,7 @@ export default new Vuex.Store({
 
     },
     mutations: {
-        setHostId: function(state, payload) {
-            console.log("mutating host id")
+        setHostId: function(state, payload) {        
             state.host.id = payload;
         },
         setError: function(state, payload) {
@@ -49,114 +48,78 @@ export default new Vuex.Store({
             state.peer.conn = payload
             state.peer.id = payload.peer
         },
-        setPeerServer: function(state, payload) {
-            console.log("Setting peer ", payload)
+        setPeerServer: function(state, payload) {        
             state.host.peer = new Vue.prototype.Peer(payload)
         },
         setNewSend: function(state, payload) {
             state.transfers.push({ type: "SEND", id: payload.send_id, obj: payload, progress: 0.0, sent: 0.0, handle: payload.handle, play: false, output: new Blob(), outputURL: '' })
         },
-        setNewRec: function(state, payload) {
-            console.log("payload", payload)
+        setNewRec: function(state, payload) {       
             state.transfers.push({ type: "RECEIVE", id: payload.send_id, obj: payload.obj, progress: 0.0, sent: 0.0, handle: payload.handle, play: false, output: new Blob(), outputURL: '' })
         },
         setSendProgress: function(state, payload) {
-            let thisSend = state.transfers.find((send) => {
-                console.log("Checking send progress", send)
+            let thisSend = state.transfers.find((send) => {            
                 return send.id == payload.id
             })
-            if (thisSend) {
-                console.log("FOUND SEND", payload.id)
+            if (thisSend) {           
                 thisSend.progress = payload.progress
                 thisSend.sent = payload.sent
-            } else {
-                console.log("COULDNT FIND SEND", payload.id)
             }
         },
         setPauseTransfer: function(state, payload) {
-            console.log("TRYING TO PAUSE")
-                //find transfer to pause
+            //find transfer to pause
             let thisSend = state.transfers.find((send) => {
-                console.log("PAUSE ", send)
                 return send.id == payload.id
             })
-            if (thisSend) {
-                console.log("FOUND SEND PAUSE", payload.id)
+            
+            if (thisSend) {             
                 thisSend.handle.pause()
-
-            } else {
-                console.log("COULDNT FIND SEND to PAUSE", payload.id)
             }
 
         },
-        setStopTransfer: function(state, payload) {
-            console.log("TRYING TO cancel")
-                //find transfer to cancel
-            let thisSend = state.transfers.find((send) => {
-                console.log("cancel ", send)
+        setStopTransfer: function(state, payload) { 
+            //find transfer to cancel
+            let thisSend = state.transfers.find((send) => {         
                 return send.id == payload.id
             })
 
-            if (thisSend) {
-                console.log("FOUND SEND cancel", payload.id)
+            if (thisSend) {          
                 thisSend.handle.cancel()
                 thisSend.type = "CANCELLED"
                 thisSend.progress = 0.0
                 thisSend.sent = 0.0
-
-            } else {
-                console.log("COULDNT FIND SEND to cancel", payload.id)
             }
 
         },
-        setResumeTransfer: function(state, payload) {
-            console.log("TRYING TO resume")
-                //find transfer to resume
+        setResumeTransfer: function(state, payload) {         
+            //find transfer to resume
             let thisSend = state.transfers.find((send) => {
-                console.log("resume ", send)
                 return send.id == payload.id
             })
-            if (thisSend) {
-                console.log("FOUND SEND resume", payload.id)
+            if (thisSend) {          
                 thisSend.handle.resume()
-
-            } else {
-                console.log("COULDNT FIND SEND to resume", payload.id)
             }
 
         },
-        setPlayTransfer: function(state, payload) {
-            console.log("TRYING TO play")
-                //find transfer to play
-            let thisSend = state.transfers.find((send) => {
-                console.log("play ", send)
+        setPlayTransfer: function(state, payload) {    
+            //find transfer to play
+            let thisSend = state.transfers.find((send) => {          
                 return send.id == payload.id
             })
-            if (thisSend) {
-                console.log("FOUND SEND play", payload.id)
+            if (thisSend) {            
                 thisSend.play = true
-
-            } else {
-                console.log("COULDNT FIND SEND to resume", payload.id)
             }
 
         },
         storeOutput: function(state, payload) {
-
             //find transfer to play
             let thisSend = state.transfers.find((send) => {
-
                 return send.id == payload.id
             })
             if (thisSend) {
-
                 thisSend.output = payload.output
                 thisSend.outputURL = window.URL.createObjectURL(payload.output);
-
-            } else {
-                console.log("COULDNT FIND SEND to resume", payload.id)
             }
-
         }
 
     },
@@ -174,27 +137,21 @@ export default new Vuex.Store({
             commit('setPauseTransfer', payload)
         },
         connect_send_peer: function({ commit, state }, payload) {
-
-            console.log("Connecting to ", payload.id)
             let conn = state.host.peer.connect(payload.id);
             conn.on('open', function(otherID) {
                 commit('setError', [])
                     // here you have conn.id
                 commit('setPeer', conn)
-
-                console.log("sending", payload.file)
+        
                 let file = payload.file.srcElement.files[0]
-
                 let newSendID = Vue.uuidv4();
-
                 let newSendObj = {
                     peer: payload.id,
                     send_id: newSendID,
                     file: { name: file.name, size: file.size },
                     handle: null
                 }
-                conn.send({ type: "SEND", id: newSendID, obj: { peer: payload.id, send_id: newSendID, file: { name: file.name, size: file.size } } });
-                console.log("Sending w/new ID", newSendID)
+                conn.send({ type: "SEND", id: newSendID, obj: { peer: payload.id, send_id: newSendID, file: { name: file.name, size: file.size } } });          
 
                 Vue.prototype.PeerSend(conn, file)
                     .on('accept', function() {
@@ -210,31 +167,26 @@ export default new Vuex.Store({
 
             });
             conn.on('error', function(err) {
-                console.log("err", err)
+                console.error("Connection err", err)
             })
 
         },
-        connect_peer: function({ commit, state }, payload) {
-            console.log("Connecting to ", payload)
+        connect_peer: function({ commit, state }, payload) {       
             let conn = state.host.peer.connect(payload);
             conn.on('open', function(otherID) {
                 commit('setError', [])
                     // here you have conn.id
                 commit('setPeer', conn)
                 conn.send('hi! im connected', otherID);
-
-
-
             });
             conn.on('error', function(err) {
-                console.log("err", err)
+                console.error("Connection err", err)
             })
 
         },
-        peer_init: function({ commit, state }) {
-            console.log("initializing peer")
+        peer_init: function({ commit, state }) {        
             commit('setPeerServer', {
-                host: '',
+                host: '', /* Set your HOST here, peerjs backend can be hosted on Heroku very easily */
                 secure: true,
                 port: 443,
                 iceServers: [
@@ -245,22 +197,17 @@ export default new Vuex.Store({
                 path: '/'
             })
 
-            state.host.peer.on('open', function(id) {
-                console.log('My peer ID is: ' + id);
+            state.host.peer.on('open', function(id) {           
                 commit("setHostId", id)
             });
-            state.host.peer.on('error', function(err) {
-                console.log("Error: ", err);
+            state.host.peer.on('error', function(err) {           
                 commit('setError', [err])
             });
-            state.host.peer.on('connection', function(conn) {
-                console.log("Connection", conn, state.host.peer.connections);
+            state.host.peer.on('connection', function(conn) {              
                 commit('setPeer', conn)
                 let sendRecID = "x";
                 let sendObj = {};
-                conn.on('data', function(data) {
-                    // Will print 'hi!'
-                    console.log("datacon", data);
+                conn.on('data', function(data) {                       
                     if (data.type == "SEND") {
                         sendRecID = data.id
                         sendObj = data.obj
@@ -269,10 +216,8 @@ export default new Vuex.Store({
                 conn.on("open", function() {
                     Vue.prototype.PeerReceive(conn)
                         .on('incoming', function(file) {
-                            console.log(sendObj)
                             commit('setNewRec', { send_id: sendRecID, obj: sendObj, handle: this })
-                            this.accept(file)
-
+                            this.accept(file) /* Auto-accept transfer */
                         })
                         .on('cancel', function() {
                             commit('setStopTransfer', {
@@ -286,12 +231,11 @@ export default new Vuex.Store({
                         })
                         .on('complete', function(file) {
                             let outblock = new Blob(file.data, { type: file.type })
-                            commit('storeOutput', { id: sendRecID, output: outblock })
-                            console.log("Done", outblock)
+                            commit('storeOutput', { id: sendRecID, output: outblock })                    
                             if (outblock.type == "text/plain") {
                                 var reader = new FileReader();
                                 reader.onload = function() {
-                                    console.log("out result", reader.result)
+                                    console.log("Reader result", reader.result)
                                 }
                                 reader.readAsText(outblock);
                             } else {
