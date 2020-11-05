@@ -51,12 +51,12 @@ export default{
         setSelFile(x){
             this.selFile = x
         },        
-        connect() {
-            console.log("Connecting to",this.connect_id)
+        connect() {    
+            /* CONNECT ONLY */
             this.connect_peer(this.connect_id)
         },
         connectSend() {
-            console.log("Connecting to",this.connect_id)
+            /* CONNECTS & SEND FILE */
             this.connect_send_peer({id:this.connect_id,file:this.selFile})
         }
     }
